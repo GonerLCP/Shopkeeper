@@ -12,8 +12,8 @@ public class Items : MonoBehaviour
     public List<Magasin> Boutique = new List<Magasin>();
     public List<Arme> Inventaire = new List<Arme>();
     public List<Client> Cli = new List<Client>();
-    public CaisseTrigger CaisseTrigger;
-    bool doOnce;
+    public CaisseTrigger caisseTrigger;
+    public Customers customers;
 
     // Start is called before the first frame update
     void Start()
@@ -28,29 +28,25 @@ public class Items : MonoBehaviour
         //Initialisation de la boutique
         Boutique.Add(new Magasin(10000, 20));
 
-        doOnce = true;
 
     }
 
-    // Update is called once per frame
-    void Update()
+    public void AppelAchat()
     {
-        //Si client est à la caisse, alors on appelle la fonction acheter, le doonce n'est la que pour éviter de call 100 fois la même commande
-        if (doOnce == true && CaisseTrigger.clientALaCaisse == true)
-        {
-            StartCoroutine(Achat(CaisseTrigger.classeDuClient, Inventaire.ElementAt(CaisseTrigger.classeDuClient._tricheparcequejesaispasutiliserlesEnum), Boutique.ElementAt(0)));
-            doOnce = false;
-        }
+        //StartCoroutine(Achat(caisseTrigger.classeDuClient, Inventaire.ElementAt(caisseTrigger.classeDuClient._tricheparcequejesaispasutiliserlesEnum), Boutique.ElementAt(0),caisseTrigger));
+        print("Un client veux acheter un objet");
+        caisseTrigger.classeDuClient.Acheter(caisseTrigger.classeDuClient, Inventaire.ElementAt(caisseTrigger.classeDuClient._tricheparcequejesaispasutiliserlesEnum), Boutique.ElementAt(0), caisseTrigger);
+        print("Il à acheté un truc");
     }
 
-    IEnumerator Achat(Client client, Arme arme, Magasin magasin) //Utilisation de Coroutine pour avoir un petit délai lors de l'achat
+    IEnumerator Achat(Client client, Arme arme, Magasin magasin, CaisseTrigger caisseTrigger) //Utilisation de Coroutine pour avoir un petit délai lors de l'achat
     {
         print("Un client veux acheter un objet");
-        yield return new WaitForSeconds(5);
-        client.Acheter(client,arme,magasin);
+        yield return new WaitForSeconds(0.1f);
+        client.Acheter(client,arme,magasin,caisseTrigger);
         print("Il à acheté un truc");
-        Destroy(CaisseTrigger.clientEnCaisse); //Plus rapide à faire qu'un demi tour WIP
-        doOnce = true;
+        //CaisseTrigger.clientEnCaisse.GetComponent<Customers>().peutTourner = true;
+        //doOnce = true;
     }
 
 }
@@ -115,6 +111,7 @@ public class Client
     public string _nom;
     public int _argent;
     public int _tricheparcequejesaispasutiliserlesEnum;
+    public bool _flic;
     public enum TypeDarme
     {
         Pistolet,
@@ -125,15 +122,17 @@ public class Client
         Revolver,
         LanceGrenade
     }
+    public TypeDarme typeDarme;
 
-    public Client(string nom, int argent, TypeDarme typeDarme, int tricheparcequejesaispasutiliserlesEnum)
+    public Client(string nom, int argent, TypeDarme typeDarme, int tricheparcequejesaispasutiliserlesEnum, bool flic)
     {
         this._nom = nom;
         this._argent = argent;
         this._tricheparcequejesaispasutiliserlesEnum = tricheparcequejesaispasutiliserlesEnum;
+        this._flic = flic;
     }
 
-    public void Acheter(Client client, Arme arme, Magasin magasin)
+    public void Acheter(Client client, Arme arme, Magasin magasin, CaisseTrigger caisseTrigger)
     {
         if (client._argent >= arme._price && arme._stock > 0) //Si assez d'argent et assez de stock, alors on fait les transactions qui vont bien
         {
@@ -148,6 +147,7 @@ public class Client
         }
         else
         {
+            caisseTrigger.pauvre = true;
             Debug.Log("Désolé nous n'avons plus cet article revenez plus tard");
         }
     }

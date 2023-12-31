@@ -9,7 +9,7 @@ using TMPro;
 public class InstantiateClient : MonoBehaviour
 {
     //Client
-    public GameObject InstantiatePrefab;
+    public List<GameObject> InstantiatePrefab = new List<GameObject>();
 
     //Rachat de stock
     public TMP_Dropdown dropdownArmes;
@@ -17,14 +17,19 @@ public class InstantiateClient : MonoBehaviour
 
     //Argent magasin
     public TMP_Text displayArgent;
+    public DestroyScript destroyScript;
 
     private void FixedUpdate()
     {
-        displayArgent.text = script.Boutique.ElementAt(0)._argent.ToString();
+        if (destroyScript.PersoDetruit==true)
+        {
+            destroyScript.PersoDetruit = false;
+            creerClient();
+        }
     }
     public void creerClient() //A l'appuye d'un bouton ca crée un client, en faites pas spawn plusieurs en même temps svp
     {
-        Instantiate(InstantiatePrefab, this.transform);
+        Instantiate(InstantiatePrefab.ElementAt(Random.Range(0,InstantiatePrefab.Count)), this.transform);
 
     }
 

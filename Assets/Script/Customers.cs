@@ -5,11 +5,15 @@ using UnityEngine;
 public class Customers : MonoBehaviour
 {
     public bool peutMarcher;
+    public bool peutReculer;
+    public bool peutTourner;
     Rigidbody2D rb;
     Vector2 vecteur;
+    float speed;
 
 
     public Client client;
+
     string[] ListeDenom = new[] { "Mishima", "Akechi", "Kawakami", "Shiho", "Takemi" };
 
     // Start is called before the first frame update
@@ -17,9 +21,9 @@ public class Customers : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         peutMarcher = true;
-
-
-        JeSuisDesoleBenoit(Random.Range(0, 4), ListeDenom);
+        peutReculer = false;
+        peutTourner = false;
+        speed = 500.0f;
     }
 
     // Update is called once per frame
@@ -30,29 +34,34 @@ public class Customers : MonoBehaviour
         {
             rb.MovePosition(new Vector2(transform.position.x,transform.position.y+0.02f));
         }
+
+        if (peutTourner == true)
+        {
+            rb.MoveRotation(rb.rotation +speed * Time.deltaTime );
+            if (rb.rotation >=179)
+            {
+                rb.rotation = 180f;
+                peutReculer = true;
+                peutTourner=false;
+            }
+        }
+
+        if (peutReculer == true)
+        {
+            rb.MovePosition(new Vector2(transform.position.x, transform.position.y - 0.02f));
+            this.GetComponent<BoxCollider2D>().enabled = true;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision) //désactive l'avancement du clien quand il est à la caisse
     {
-        peutMarcher = false;
-    }
-
-    private void JeSuisDesoleBenoit(int randomNumb, string[] noms) //Création d'un Client random, le switch case est du au fait que je ne sais aboslument pas gérer les enums, c'est pour ca que je l'ai honteusement caché par un int
-    {
-        switch (randomNumb)
+        if (collision.tag == "Comptoir")
         {
-            case 0:
-                client = new Client(noms[Random.Range(0, 5)], Random.Range(0, 100000), Client.TypeDarme.Pistolet, 0);
-                break;
-            case 1:
-                client = new Client(noms[Random.Range(0, 5)], Random.Range(0, 100000), Client.TypeDarme.FusilAPompe, 1);
-                break;
-            case 2:
-                client = new Client(noms[Random.Range(0, 5)], Random.Range(0, 100000), Client.TypeDarme.LancePierre, 2);
-                break;
-            case 3:
-                client = new Client(noms[Random.Range(0, 5)], Random.Range(0, 100000), Client.TypeDarme.Mitraillette, 3);
-                break;
+            peutMarcher = false;
+        }
+        if(collision.tag == "Destroy")
+        {
+            Destroy(gameObject);
         }
     }
 }
